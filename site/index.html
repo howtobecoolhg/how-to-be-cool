@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794283700"></script>
+<script src="config.js?v=1794367035"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794283700"></script>
+<script src="shim.js?v=1794367035"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -202,7 +202,7 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
   <div class="top-in">
     <a class="logo" href="#home"><svg class="cathead" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3.5l4.6 4.6C9.7 7.7 10.8 7.5 12 7.5s2.3.2 3.4.6L20 3.5v9.2c0 4.9-3.4 7.8-8 7.8s-8-2.9-8-7.8z"/></svg>how to be cool</a>
     <form class="search" id="searchForm" role="search">
-      <input id="q" type="search" placeholder="search 4 pizza, vintage, Jake, SATX..." aria-label="Search the guide" autocomplete="off">
+      <input id="q" type="search" placeholder="search 4 pizza, vintage, sushi, SATX..." aria-label="Search the guide" autocomplete="off">
       <button class="pill" type="submit">Search</button>
     </form>
     <button class="pill lime" id="addBtn" type="button" hidden>+ Add</button>
@@ -586,7 +586,7 @@ function openAdd(mode="item"){
         <div class="field"><label for="aType">Type</label><input id="aType" list="typeList" placeholder="pizza, vintage, shoes..."><datalist id="typeList">${types.map(t=>`<option value="${esc(t)}">`).join("")}</datalist></div>
         <div class="field"><label for="aPlace">City</label><input id="aPlace" list="placeList" value="${esc(st.lastCity)}" placeholder="none (online, anywhere)"><datalist id="placeList">${places.map(t=>`<option value="${esc(t)}">`).join("")}</datalist></div>
       </div>
-      <div class="field"><label for="aWho">For (gifts) or by (quotes)</label><input id="aWho" placeholder="Jake"></div>
+      <div class="field"><label for="aWho">For (gifts) or by (quotes)</label><input id="aWho" placeholder="a friend"></div>
       <div class="field"><label for="aNote">Notes</label><textarea id="aNote" placeholder="get the Italian sub"></textarea></div>
       <div class="field"><label for="aLink">Link</label><input id="aLink" type="url" placeholder="https://..."></div>
       ${assets?`<div class="field"><label for="aPhoto">Photo</label><input id="aPhoto" type="file" accept="image/*"></div>`:""}
@@ -723,8 +723,8 @@ function openListForm(l=null){
   <div class="scrim" id="scrim"><div class="win" role="dialog" aria-modal="true" aria-label="${l?"Edit list":"New list"}">
     <div class="win-h"><span>${l?"Edit list details":"New list to share"}</span><button class="x" id="closeX" aria-label="Close">x</button></div>
     <form class="win-b" id="listForm">
-      <div class="field"><label for="lName">List name</label><input id="lName" required value="${esc(l?.name||"")}" placeholder="Gift ideas for Milo"></div>
-      <div class="field"><label for="lFor">Who it's for</label><input id="lFor" value="${esc(l?.forWho||"")}" placeholder="Sarah"></div>
+      <div class="field"><label for="lName">List name</label><input id="lName" required value="${esc(l?.name||"")}" placeholder="Gift ideas for a friend"></div>
+      <div class="field"><label for="lFor">Who it's for</label><input id="lFor" value="${esc(l?.forWho||"")}" placeholder="a friend"></div>
       <div class="field"><label for="lIntro">A note at the top of their page</label><textarea id="lIntro" placeholder="Here are some ideas I think he'd love!">${esc(l?.intro||"")}</textarea></div>
       <label class="checkline"><input type="checkbox" id="lPrivate" ${l?.private?"checked":""}> Private: only you can see it (its link won't work for anyone else)</label>
       <div class="row"><button class="pill lime" type="submit">${l?"Save details":"Make list"}</button></div>
@@ -775,7 +775,7 @@ function renderList(id){
       ${canEdit?`<section class="box"><h2>Add to this list</h2><div class="bd" style="display:grid;gap:10px">
         <div class="row"><button class="pill small" type="button" aria-pressed="${st.listAdd==="guide"}" data-ladd="guide">From my guide</button><button class="pill small" type="button" aria-pressed="${st.listAdd==="new"}" data-ladd="new">Something new</button></div>
         ${st.listAdd==="guide"?`
-          <input id="listQ" type="search" value="${esc(st.listQ)}" placeholder="search your guide: snoopy, pizza, Brooklyn..." class="softsearch" style="width:100%">
+          <input id="listQ" type="search" value="${esc(st.listQ)}" placeholder="search your guide: tacos, vintage, Brooklyn..." class="softsearch" style="width:100%">
           ${st.listQ?(found.length?`<ul class="list">${found.map(i=>`<li style="cursor:default">${thumb(i)}<div class="tx"><b>${esc(i.title)}</b><small>${esc(CATS[i.cat]?.label||"")} · ${sub(i)}</small></div><button class="pill small lime" type="button" data-addi="${esc(i.id)}">+ Add</button></li>`).join("")}</ul>`:`<small>Nothing in your guide matches. Try "Something new".</small>`):`<small style="color:var(--muted)">Type to search everything in your guide.</small>`}`
         :`<form id="newEntry" style="display:grid;gap:8px">
           <div class="field"><label for="neTitle">Name</label><input id="neTitle" required placeholder="LEGO botanical set"></div>
