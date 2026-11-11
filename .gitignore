@@ -1,0 +1,11 @@
+# This repository is public. Keep anything personal or private out of it.
+.DS_Store
+.claude/
+
+# Raw notes and full data exports (include private items)
+data/
+site/export/
+site/supabase/import.sql
+
+# Working photo folder (the published copies live in site/photos)
+/photos/
