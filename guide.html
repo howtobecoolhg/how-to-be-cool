@@ -309,6 +309,8 @@ function canonType(t){ const raw=String(t||"").trim(); if(!raw) return ""; const
   const counts={}; items.forEach(i=>{ if(i.type && typeKey(i.type)===k) counts[i.type]=(counts[i.type]||0)+1; });
   const best=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]; return fmtType(best?best[0]:raw); }
 function typeOptions(){ return [...new Set(items.map(i=>fmtType(i.type)).filter(Boolean))].sort().map(t=>`<option value="${esc(t)}">`).join(""); }
+const CITY_CATS=["eat","do"];
+const usesCity = cat => CITY_CATS.includes(cat);
 function sub(it){ return [fmtType(it.type), cityOf(it), it.who?("for "+it.who):"", it.note].filter(Boolean).map(esc).join(" · "); }
 function linkFor(it){
   if (it.link) return it.link;
@@ -509,7 +511,7 @@ function openItem(id){
       </div>
       <div class="field"><label for="eNote">Notes</label><textarea id="eNote">${esc(it.note)}</textarea></div>
       <div class="two">
-        <div class="field"><label for="eCity">City</label><input id="eCity" list="cityList" value="${esc(cityOf(it))}" placeholder="none"></div>
+        <div class="field" id="eCityWrap" ${usesCity(it.cat)?"":"hidden"}><label for="eCity">City</label><input id="eCity" list="cityList" value="${esc(cityOf(it))}" placeholder="none"></div>
         <div class="field"><label for="eType">Type</label><input id="eType" list="typeListE" value="${esc(fmtType(it.type))}"><datalist id="typeListE">${typeOptions()}</datalist></div>
       </div>
       <datalist id="cityList">${[...new Set(items.map(cityOf).filter(Boolean))].sort().map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
@@ -532,11 +534,12 @@ function openItem(id){
     if (entriesOf(l).some(e=>e.itemId===it.id)) { toast("Already on that list"); return; }
     if (await saveEntries(id, [...entriesOf(l), entryFromItem(it)])) toast("Added to "+(lists.find(x=>x.id===id)?.name||tln.value.trim()||"list"));
   };
+  $("#eCat").onchange=()=>{ $("#eCityWrap").hidden=!usesCity($("#eCat").value); };
   sheet.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>patch(it,{status:b.dataset.st},true));
   sheet.querySelectorAll("[data-rate]").forEach(b=>b.onclick=()=>patch(it,{rating:+b.dataset.rate===it.rating?0:+b.dataset.rate},true));
   $("#saveBtn").onclick=async()=>{
     const nt=$("#eTitle").value.trim(); if(!nt){ toast("Give it a name first"); return; }
-    const p={title:nt, cat:$("#eCat").value, note:$("#eNote").value.trim(), link:$("#eLink").value.trim(), place:$("#eCity").value.trim(), type:canonType($("#eType").value), private:$("#ePrivate").checked};
+    const p={title:nt, cat:$("#eCat").value, note:$("#eNote").value.trim(), link:$("#eLink").value.trim(), place:(usesCity($("#eCat").value)?$("#eCity").value.trim():(it.place||"")), type:canonType($("#eType").value), private:$("#ePrivate").checked};
     const f=$("#ePhoto")?.files?.[0];
     if (f){ const id=await upload(f); if(id) p.img=id; }
     await patch(it,p,false); closeSheet(); toast("Saved");
@@ -577,7 +580,7 @@ function openAdd(mode="item"){
       <div class="field"><label for="aTitle">Name</label><input id="aTitle" required placeholder="Palm Pizza"></div>
       <div class="two">
         <div class="field"><label for="aType">Type</label><input id="aType" list="typeList" placeholder="pizza, vintage, shoes..."><datalist id="typeList">${types.map(t=>`<option value="${esc(t)}">`).join("")}</datalist></div>
-        <div class="field"><label for="aPlace">City</label><input id="aPlace" list="placeList" value="${esc(st.lastCity)}" placeholder="none (online, anywhere)"><datalist id="placeList">${places.map(t=>`<option value="${esc(t)}">`).join("")}</datalist></div>
+        <div class="field" id="aPlaceWrap"><label for="aPlace">City</label><input id="aPlace" list="placeList" value="${esc(st.lastCity)}" placeholder="none (online, anywhere)"><datalist id="placeList">${places.map(t=>`<option value="${esc(t)}">`).join("")}</datalist></div>
       </div>
       <div class="field"><label for="aWho">For (gifts) or by (quotes)</label><input id="aWho" placeholder="a friend"></div>
       <div class="field"><label for="aNote">Notes</label><textarea id="aNote" placeholder="get the Italian sub"></textarea></div>
@@ -618,14 +621,14 @@ function openAdd(mode="item"){
     };
     return;
   }
-  const fillStatus=()=>{ const s=statusFor($("#aCat").value); $("#aStatus").innerHTML=["todo","done","maybe"].map(k=>`<option value="${k}">${esc(s[k]||k)}</option>`).join(""); const pv=$("#aPrivate"); if (pv) pv.checked = $("#aCat").value==="gift"; };
+  const fillStatus=()=>{ const s=statusFor($("#aCat").value); $("#aStatus").innerHTML=["todo","done","maybe"].map(k=>`<option value="${k}">${esc(s[k]||k)}</option>`).join(""); const pw=$("#aPlaceWrap"); if (pw) pw.hidden=!usesCity($("#aCat").value); const pv=$("#aPrivate"); if (pv) pv.checked = $("#aCat").value==="gift"; };
   $("#aCat").onchange=fillStatus; fillStatus();
   $("#aTitle").focus();
   $("#addForm").onsubmit=async e=>{
     e.preventDefault();
     const cat=$("#aCat").value, title=$("#aTitle").value.trim(); if(!title) return;
     const id=(cat+"-"+title).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50)+"-"+Math.random().toString(36).slice(2,6);
-    const doc={cat,title,type:canonType($("#aType").value),place:(st.lastCity=$("#aPlace").value.trim(), savePrefs(), st.lastCity),status:$("#aStatus").value,note:$("#aNote").value.trim(),
+    const doc={cat,title,type:canonType($("#aType").value),place:(usesCity(cat)?(st.lastCity=$("#aPlace").value.trim(), savePrefs(), st.lastCity):""),status:$("#aStatus").value,note:$("#aNote").value.trim(),
       who:$("#aWho").value.trim(),link:$("#aLink").value.trim(),img:"",rating:0,private:$("#aPrivate").checked,added:new Date().toISOString()};
     const f=$("#aPhoto")?.files?.[0]; if (f){ const a=await upload(f); if(a) doc.img=a; }
     try { await db.collection("items").doc(id).set(doc); closeSheet(); toast("Added "+title); }
@@ -778,7 +781,7 @@ function renderList(id){
           <div class="field"><label for="neTitle">Name</label><input id="neTitle" required placeholder="LEGO botanical set"></div>
           <div class="two"><div class="field"><label for="neCat">Category</label><select id="neCat">${Object.entries(CATS).map(([k,c])=>`<option value="${k}" ${k==="gift"?"selected":""}>${esc(c.label)}</option>`).join("")}</select></div>
             <div class="field"><label for="neType">Type</label><input id="neType" list="typeListN" placeholder="toy, book, pizza..."><datalist id="typeListN">${typeOptions()}</datalist></div></div>
-          <div class="two"><div class="field"><label for="neCity">City</label><input id="neCity" placeholder="optional"></div>
+          <div class="two"><div class="field" id="neCityWrap" hidden><label for="neCity">City</label><input id="neCity" placeholder="optional"></div>
             <div class="field"><label for="neLink">Link</label><input id="neLink" type="url" placeholder="https://..."></div></div>
           <div class="field"><label for="neNote">Note for them</label><textarea id="neNote" placeholder="he's into building things"></textarea></div>
           <label style="font-weight:600;display:flex;gap:6px;align-items:center"><input type="checkbox" id="neKeep"> Also save it to my guide</label>
@@ -800,9 +803,10 @@ function renderList(id){
   app.querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{ if (await saveEntries(id, entriesOf(l).filter(e=>e.key!==b.dataset.rm))) renderList(id); });
   app.querySelectorAll("[data-up]").forEach(b=>b.onclick=async()=>{ const a=entriesOf(l).slice(), i=a.findIndex(e=>e.key===b.dataset.up); if(i>0){ [a[i-1],a[i]]=[a[i],a[i-1]]; if (await saveEntries(id,a)) renderList(id); } });
   app.querySelectorAll("[data-enote]").forEach(t=>t.onchange=async()=>{ const a=entriesOf(l).map(e=>e.key===t.dataset.enote?{...e, note:t.value.trim()}:e); if (await saveEntries(id,a)) toast("Note saved"); });
+  const nc=$("#neCat"); if (nc) { const sync=()=>{ $("#neCityWrap").hidden=!usesCity(nc.value); }; nc.onchange=sync; sync(); }
   const ne=$("#newEntry"); if (ne) ne.onsubmit=async e=>{
     e.preventDefault();
-    const en={key:ekey(), itemId:"", title:$("#neTitle").value.trim(), cat:$("#neCat").value, type:canonType($("#neType").value), city:$("#neCity").value.trim(), note:$("#neNote").value.trim(), link:$("#neLink").value.trim(), img:""};
+    const en={key:ekey(), itemId:"", title:$("#neTitle").value.trim(), cat:$("#neCat").value, type:canonType($("#neType").value), city:(usesCity($("#neCat").value)?$("#neCity").value.trim():""), note:$("#neNote").value.trim(), link:$("#neLink").value.trim(), img:""};
     if (!en.title) return;
     if ($("#neKeep").checked) {
       const iid=(en.cat+"-"+en.title).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50)+"-"+Math.random().toString(36).slice(2,6);
