@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794369620"></script>
+<script src="config.js?v=1794369641"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794369620"></script>
+<script src="shim.js?v=1794369641"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -233,6 +233,7 @@ select:not([multiple]){-webkit-appearance:none;appearance:none;padding-right:34p
 const BASE_CATS = {
   gift:   {label:"Gift",            c1:"#ff6f8f", c2:"#d0104c"},
   wish:   {label:"Buy",           c1:"#ff9fd0", c2:"#c2187a"},
+  wear:   {label:"Wear",             c1:"#9fd3ff", c2:"#3a7bd5", icon:"closet"},
   do:     {label:"Do",               c1:"#b79bff", c2:"#7a4dff"},
   make:   {label:"Make",             c1:"#ffe066", c2:"#f5a300"},
   eat:    {label:"Eat",              c1:"#ff7ab8", c2:"#ff2f86"},
@@ -245,7 +246,7 @@ const BASE_CATS = {
 let CATS = {...BASE_CATS};
 const SWATCHES = [["#ff7ab8","#ff2f86"],["#b79bff","#7a4dff"],["#ffe066","#f5a300"],["#7fe0c0","#1f9e7a"],["#9fd3ff","#3a7bd5"],["#ffb08a","#ff6a3d"],["#c6f26b","#56a300"],["#6fe3e0","#138a8a"],["#ff6f8f","#d0104c"],["#5a4866","#1a1420"]];
 const ST4 = (todo,done,nope="not for me") => ({todo, done, maybe:"unsure", nope});
-const STATUS_BY = { gift:ST4("idea","given","pass"), wish:ST4("want","got it","pass"), do:ST4("to do","done"), make:ST4("to make","made"), eat:ST4("to try","been"),
+const STATUS_BY = { gift:ST4("idea","given","pass"), wish:ST4("want","got it","pass"), wear:ST4("to wear","worn"), do:ST4("to do","done"), make:ST4("to make","made"), eat:ST4("to try","been"),
   read:ST4("to read","read"), watch:ST4("to watch","watched"), music:ST4("to play","played"), people:ST4("to meet","met"), words:{todo:"keep"} };
 const ICON = {
   eat:'<path d="M7 2v9a3 3 0 0 0 2 2.8V22h2v-8.2A3 3 0 0 0 13 11V2h-1.5v7h-1V2h-1v7h-1V2zM17 2c-1.7 0-3 2.2-3 5v6h2v9h2V2z"/>',
@@ -264,7 +265,7 @@ const ICON = {
   words:'<path d="M3 21v-7.5C3 7.6 5.6 4.3 10 3l1 2c-2.6 1-4 3-4 5.5h4V21zm10 0v-7.5c0-5.9 2.6-9.2 7-10.5l1 2c-2.6 1-4 3-4 5.5h4V21z"/>',
   idea:'<path d="M12 2a7 7 0 0 1 4 12.7V18H8v-3.3A7 7 0 0 1 12 2zM9 20h6v2H9z"/>',
 };
-const MOODS = {hungry:["eat"],bored:["do"],crafty:["make"],spendy:["wish"],generous:["gift"],cozy:["read"],"couch potato":["watch"],"need a song":["music"],social:["people"],"need a pep talk":["words"]};
+const MOODS = {hungry:["eat"],bored:["do"],crafty:["make"],spendy:["wish"],dressy:["wear"],generous:["gift"],cozy:["read"],"couch potato":["watch"],"need a song":["music"],social:["people"],"need a pep talk":["words"]};
 
 let db=null, assets=null, canEdit=false, items=[], loaded=false, outfits=[], lists=[], listsLoaded=false;
 const st = { q:"", cat:"all", status:"todo", city:"all", lastCity:"Austin", type:"all", feedCat:"all", mood:"", seed: Math.random(), top8: [] };
