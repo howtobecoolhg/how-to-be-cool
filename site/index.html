@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794369286"></script>
+<script src="config.js?v=1794369556"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794369286"></script>
+<script src="shim.js?v=1794369556"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -231,16 +231,16 @@ select:not([multiple]){-webkit-appearance:none;appearance:none;padding-right:34p
 <script>
 (() => {
 const BASE_CATS = {
-  gift:   {label:"Gifts",            c1:"#ff6f8f", c2:"#d0104c"},
-  wish:   {label:"Wishes",           c1:"#ff9fd0", c2:"#c2187a"},
+  gift:   {label:"Gift",            c1:"#ff6f8f", c2:"#d0104c"},
+  wish:   {label:"Wish",           c1:"#ff9fd0", c2:"#c2187a"},
   do:     {label:"Do",               c1:"#b79bff", c2:"#7a4dff"},
   make:   {label:"Make",             c1:"#ffe066", c2:"#f5a300"},
   eat:    {label:"Eat",              c1:"#ff7ab8", c2:"#ff2f86"},
   read:   {label:"Read",             c1:"#7fe0c0", c2:"#1f9e7a"},
   watch:  {label:"Watch",            c1:"#6fe3e0", c2:"#138a8a"},
-  music:  {label:"Music",            c1:"#9fd3ff", c2:"#3a7bd5"},
-  people: {label:"People",           c1:"#ffb08a", c2:"#ff6a3d"},
-  words:  {label:"Words",            c1:"#c6f26b", c2:"#56a300"},
+  music:  {label:"Listen",            c1:"#9fd3ff", c2:"#3a7bd5"},
+  people: {label:"Meet",           c1:"#ffb08a", c2:"#ff6a3d"},
+  words:  {label:"Quote",            c1:"#c6f26b", c2:"#56a300"},
 };
 let CATS = {...BASE_CATS};
 const SWATCHES = [["#ff7ab8","#ff2f86"],["#b79bff","#7a4dff"],["#ffe066","#f5a300"],["#7fe0c0","#1f9e7a"],["#9fd3ff","#3a7bd5"],["#ffb08a","#ff6a3d"],["#c6f26b","#56a300"],["#6fe3e0","#138a8a"],["#ff6f8f","#d0104c"],["#5a4866","#1a1420"]];
@@ -380,7 +380,7 @@ function startWords(){
   clearInterval(wordsTimer); wordsTimer=null;
   const box=$("#wordsBox"); if(!box) return;
   const w=items.filter(i=>i.cat==="words").sort((a,b)=>a.id.localeCompare(b.id));
-  if (!w.length) { box.innerHTML=`<span style="font:500 13px var(--ui);text-transform:none">Add a quote under Words and it shows up here.</span>`; return; }
+  if (!w.length) { box.innerHTML=`<span style="font:500 13px var(--ui);text-transform:none">Add a quote under Quote and it shows up here.</span>`; return; }
   if (wordsIdx===null) wordsIdx=new Date().getDate()%w.length;
   const show=()=>{ wordsIdx=((wordsIdx%w.length)+w.length)%w.length; const q=w[wordsIdx];
     box.innerHTML=`<div class="wq">"${esc(q.title)}"${q.who?`<small>- ${esc(q.who)}</small>`:""}</div>${w.length>1?`<div class="wnav"><button class="pill small" type="button" id="wPrev" aria-label="Previous quote">&larr;</button><span>${wordsIdx+1} / ${w.length}</span><button class="pill small" type="button" id="wNext" aria-label="Next quote">&rarr;</button></div>`:""}`;
@@ -416,12 +416,12 @@ function renderHome(){
       <section class="box"><h2>Details${canEdit?`<span class="sub"><button class="danger" id="editCats" type="button">edit categories</button></span>`:""}</h2><div class="bd stats">
         ${Object.entries(CATS).map(([k,c])=>`<a href="#browse" data-gocat="${k}">${esc(c.label)}</a><b>${count(k).filter(i=>i.status==="todo").length}<span style="color:var(--muted)">/${count(k).length}</span></b>`).join("")}
       </div></section>
-      ${people.length?`<section class="box"><h2>Gifts <span class="sub">${people.length} people</span></h2><div class="bd stats" style="grid-template-columns:auto 1fr">
+      ${people.length?`<section class="box"><h2>Gift <span class="sub">${people.length} people</span></h2><div class="bd stats" style="grid-template-columns:auto 1fr">
         ${people.map(p=>`<a href="#browse" data-goq="${esc(p)}">${esc(p)}</a><span>${gifts.filter(g=>g.who===p).map(g=>esc(g.title)).join(", ")}</span>`).join("")}
       </div></section>`:""}
     </div>
     <div class="col">
-      <section class="box"><h2>Words</h2><div class="bd blurb" id="wordsBox" aria-live="polite"></div></section>
+      <section class="box"><h2>Quote</h2><div class="bd blurb" id="wordsBox" aria-live="polite"></div></section>
       <section class="box"><h2>Top 8 ${(st.mood||st.city!=="all")?`<span class="sub">${[st.mood&&("feeling "+esc(st.mood)), st.city==="__none"?"no city":st.city!=="all"&&("in "+esc(st.city))].filter(Boolean).join(", ")}</span>`:""}</h2><div class="bd">
         <div class="top8">${top8.map(it=>`<button class="t8" data-open="${esc(it.id)}">${thumb(it)}<span>${esc(it.title)}</span></button>`).join("")}</div>
         <div class="row" style="margin-top:12px;justify-content:space-between"><button class="pill small" id="reroll">Shuffle my Top 8</button><a href="#feed" class="pill small">Open the feed</a></div>
