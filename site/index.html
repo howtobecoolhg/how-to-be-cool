@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794368956"></script>
+<script src="config.js?v=1794369286"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794368956"></script>
+<script src="shim.js?v=1794369286"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -195,6 +195,11 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
 #authbar button{border:1.5px solid var(--ink);border-radius:999px;background:transparent;padding:3px 10px;font:inherit;color:var(--ink);cursor:pointer}
 #authbar label{text-transform:uppercase;letter-spacing:.08em}
 .foot{text-align:center;font:500 10px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:28px}
+.lc{text-transform:none;letter-spacing:0;font-weight:500}
+/* dropdowns: our own arrow, set in from the right edge */
+select:not([multiple]){-webkit-appearance:none;appearance:none;padding-right:34px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center;background-size:11px 7px}
 </style>
 
 <div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
@@ -455,8 +460,8 @@ function renderBrowse(){
       <div class="row">${[["all",{label:"Everything"}],...Object.entries(CATS)].map(([k,c])=>`<button class="pill small" aria-pressed="${st.cat===k}" data-cat="${k}">${esc(c.label)} <span class="n">${catCount(k)}</span></button>`).join("")}</div>
       <div class="row">
         <label for="fStatus">Show</label><select id="fStatus">${[["todo","To try / want"],["done","Done / got"],["maybe","Unsure"],["nope","Not for me"],["all","Everything"]].map(([v,l])=>`<option value="${v}" ${st.status===v?"selected":""}>${l}</option>`).join("")}</select>
-        <label for="fCity">City</label><select id="fCity">${cityOptions()}</select>
-        <label for="fType">Type</label><select id="fType"><option value="all">Any type</option>${types.map(p=>`<option value="${esc(p)}" ${st.type===p?"selected":""}>${esc(fmtType(p))}</option>`).join("")}</select>
+        <label for="fCity"><span class="lc">in</span> City</label><select id="fCity">${cityOptions()}</select>
+        <label for="fType"><span class="lc">by</span> Type</label><select id="fType"><option value="all">Any type</option>${types.map(p=>`<option value="${esc(p)}" ${st.type===p?"selected":""}>${esc(fmtType(p))}</option>`).join("")}</select>
       </div>
     </div>
     <p class="notice">${list.length} result${list.length===1?"":"s"}${st.q?` for "<b>${esc(st.q)}</b>" <button class="danger" id="clearQ">clear search</button>`:""}</p>
