@@ -195,7 +195,7 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
   <nav class="tabs" aria-label="Sections">
     <a class="pill small" href="#home" data-tab="home">Home</a>
     <a class="pill small" href="#feed" data-tab="feed">Inspo feed</a>
-    <a class="pill small" href="#browse" data-tab="browse">Browse + search</a>
+    <a class="pill small" href="#browse" data-tab="browse">Browse</a>
     <a class="pill small" href="#outfits" data-tab="outfits">Outfits</a>
     <a class="pill small" href="#lists" data-tab="lists">Lists to share</a>
     <label class="citypick" for="citySel">City <select id="citySel"><option value="all">All cities</option></select></label>
@@ -282,13 +282,13 @@ const stars = n => n ? `<span class="stars" aria-label="${n} of 5">${"★".repea
 const NONCITY = ["","Anywhere","Online","Book","Texas"];
 const cityOf = it => NONCITY.includes((it.place||"").trim()) ? "" : it.place.trim();
 const inCity = it => st.city==="all" || (st.city==="__none" ? !cityOf(it) : cityOf(it)===st.city);
-function fillCities(){
-  const sel=$("#citySel"); if(!sel) return;
+function cityOptions(){
   const counts={}; items.forEach(i=>{ const c=cityOf(i); if(c) counts[c]=(counts[c]||0)+1; });
   const cities=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
   if (st.city!=="all" && st.city!=="__none" && !counts[st.city]) st.city="all";
-  sel.innerHTML=`<option value="all">All cities</option>${cities.map(c=>`<option value="${esc(c)}" ${st.city===c?"selected":""}>${esc(c)} (${counts[c]})</option>`).join("")}<option value="__none" ${st.city==="__none"?"selected":""}>No city (online, anywhere)</option>`;
+  return `<option value="all">All cities</option>${cities.map(c=>`<option value="${esc(c)}" ${st.city===c?"selected":""}>${esc(c)} (${counts[c]})</option>`).join("")}<option value="__none" ${st.city==="__none"?"selected":""}>No city (online, anywhere)</option>`;
 }
+function fillCities(){ const sel=$("#citySel"); if(sel) sel.innerHTML=cityOptions(); }
 const TYPE_SPECIAL={bbq:"BBQ",diy:"DIY","claude code":"Claude Code",og:"OG",nyc:"NYC",atx:"ATX"};
 const PROPER_WORDS=new Set(["american","asian","cajun","caribbean","chinese","colombian","cuban","eastern","ethiopian","french","german","greek","halal","indian","israeli","italian","japanese","korean","lebanese","mediterranean","mexican","middle","peruvian","persian","puerto","rican","sonoran","spanish","swedish","taiwanese","texan","thai","turkish","venezuelan","vietnamese"]);
 function fmtType(t){
@@ -440,6 +440,7 @@ function renderBrowse(){
       <div class="row">${[["all",{label:"Everything"}],...Object.entries(CATS)].map(([k,c])=>`<button class="pill small" aria-pressed="${st.cat===k}" data-cat="${k}">${esc(c.label)} <span class="n">${catCount(k)}</span></button>`).join("")}</div>
       <div class="row">
         <label for="fStatus">Show</label><select id="fStatus">${[["todo","To try / want"],["done","Done / got"],["maybe","Unsure"],["nope","Not for me"],["all","Everything"]].map(([v,l])=>`<option value="${v}" ${st.status===v?"selected":""}>${l}</option>`).join("")}</select>
+        <label for="fCity">City</label><select id="fCity">${cityOptions()}</select>
         <label for="fType">Type</label><select id="fType"><option value="all">Any type</option>${types.map(p=>`<option value="${esc(p)}" ${st.type===p?"selected":""}>${esc(fmtType(p))}</option>`).join("")}</select>
       </div>
     </div>
@@ -449,6 +450,7 @@ function renderBrowse(){
   app.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{ st.cat=b.dataset.cat; render(); });
   $("#fStatus").onchange=e=>{ st.status=e.target.value; savePrefs(); render(); };
   $("#fType").onchange=e=>{ st.type=e.target.value; render(); };
+  $("#fCity").onchange=e=>{ st.city=e.target.value; st.top8=[]; savePrefs(); render(); };
   const cq=$("#clearQ"); if (cq) cq.onclick=()=>{ st.q=""; $("#q").value=""; render(); };
 }
 
@@ -920,7 +922,6 @@ $("#addBtn").onclick = ()=>openAdd("item");
 $("#citySel").onchange = e=>{ st.city=e.target.value; st.top8=[]; savePrefs(); render(); };
 window.addEventListener("hashchange", ()=>{
   if (route()!=="browse" && st.q) { st.q=""; $("#q").value=""; }
-  if (st.city!=="all") { st.city="all"; st.top8=[]; savePrefs(); }
   if (route()==="browse" && !st.keepBrowse) { st.q=""; $("#q").value=""; st.cat="all"; st.status="all"; st.type="all"; }
   st.keepBrowse=false;
   render(); window.scrollTo({top:0}); });
