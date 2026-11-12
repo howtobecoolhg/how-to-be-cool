@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794455183"></script>
+<script src="config.js?v=1794455409"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794455183"></script>
+<script src="shim.js?v=1794455409"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -362,7 +362,7 @@ function attachSuggest(inp, getOpts){
     box.querySelectorAll("button").forEach((b,i)=>b.addEventListener("mousedown", e=>{ e.preventDefault(); pick(opts[i]); }));
     idx=-1;
   };
-  inp.addEventListener("focus", ()=>{ all=true; open(); });
+  inp.addEventListener("focus", ()=>{ all=true; open(); if (inp.value) setTimeout(()=>{ try{ inp.select(); }catch(e){} },0); });
   inp.addEventListener("input", ()=>{ all=false; open(); });
   inp.addEventListener("blur", ()=>setTimeout(close,120));
   inp.addEventListener("mousedown", e=>{ if (e.offsetX > inp.clientWidth-36 && document.activeElement===inp) { e.preventDefault(); if (box) close(); else { all=true; open(); } } });

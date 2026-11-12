@@ -347,7 +347,7 @@ function attachSuggest(inp, getOpts){
     box.querySelectorAll("button").forEach((b,i)=>b.addEventListener("mousedown", e=>{ e.preventDefault(); pick(opts[i]); }));
     idx=-1;
   };
-  inp.addEventListener("focus", ()=>{ all=true; open(); });
+  inp.addEventListener("focus", ()=>{ all=true; open(); if (inp.value) setTimeout(()=>{ try{ inp.select(); }catch(e){} },0); });
   inp.addEventListener("input", ()=>{ all=false; open(); });
   inp.addEventListener("blur", ()=>setTimeout(close,120));
   inp.addEventListener("mousedown", e=>{ if (e.offsetX > inp.clientWidth-36 && document.activeElement===inp) { e.preventDefault(); if (box) close(); else { all=true; open(); } } });
