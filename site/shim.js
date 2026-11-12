@@ -148,6 +148,14 @@
     if ((ev === "SIGNED_IN" || ev === "SIGNED_OUT") && was !== isOwner()) location.reload();
   });
 
+  // Calls the site's own helpers (like the link reader) as the signed-in owner.
+  if (sb) window.htbcAuthFetch = async (path) => {
+    const { data } = await sb.auth.getSession();
+    const token = data?.session?.access_token;
+    if (!token) throw new Error("not signed in");
+    return fetch(path, { headers: { Authorization: "Bearer " + token } });
+  };
+
   window.claude = {
     async use(name) {
       if (!sb) return null;
