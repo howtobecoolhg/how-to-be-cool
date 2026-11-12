@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794454704"></script>
+<script src="config.js?v=1794454864"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794454704"></script>
+<script src="shim.js?v=1794454864"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -200,6 +200,10 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
 #authbar label{text-transform:uppercase;letter-spacing:.08em}
 .foot{text-align:center;font:500 10px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:28px}
 .lc{text-transform:none;letter-spacing:0;font-weight:500}
+.box .list li:last-child{border-bottom:0}
+.home-grid{align-items:stretch}
+.home-grid > .col{display:flex;flex-direction:column}
+.home-grid > .col > .box:last-child{flex:1}
 .two:has(> .field[hidden]){grid-template-columns:1fr}
 /* type fields with suggestions: same arrow as the dropdowns, browser's own marker hidden */
 input[list]{padding-right:34px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -414,7 +418,7 @@ function renderHome(){
   const gifts = items.filter(i=>i.cat==="gift" && i.who);
   const people = [...new Set(gifts.map(g=>g.who))];
   app.innerHTML = `
-  <div class="grid-home">
+  <div class="grid-home home-grid">
     <div class="col">
       <section class="box"><h2>About</h2><div class="bd">
         <div class="profile">
