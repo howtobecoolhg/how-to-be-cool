@@ -691,7 +691,7 @@ function openAdd(mode="item"){
         if (j.type) setIfEmpty("#aType", canonType(j.type));
         if (j.city && usesCity($("#aCat").value)) $("#aPlace").value=j.city;
         setIfEmpty("#aNote", [j.price, j.description].filter(Boolean).join(" · ").slice(0,240));
-        let got="Filled in from the link. Check it over, then add it.";
+        let got=j.notice||"Filled in from the link. Check it over, then add it.";
         if (j.image && assets) {
           msg("Getting the photo...");
           const ir=await window.htbcAuthFetch("/api/unfurl?img=1&url="+encodeURIComponent(j.image));
@@ -1049,6 +1049,17 @@ render();
   db.collection("items").limit(1000).onSnapshot(snap=>{
     if (!snap.metadata.fromCache) clearTimeout(timer);
     items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    if (!window.__sharedAddChecked) {
+      window.__sharedAddChecked = true;
+      // Opened from the "Add to How to Be Cool" share shortcut: ?add=<link or shared text>
+      const sp = new URLSearchParams(location.search), raw = sp.get("add");
+      if (raw) {
+        history.replaceState(null, "", location.pathname + location.hash);
+        const link = (raw.match(/https?:\/\/\S+/) || [raw])[0].trim();
+        if (canEdit) setTimeout(()=>{ openAdd("item"); const l=$("#aLink"); if (l) { l.value=link; const b=$("#aFill"); if (b) b.click(); } }, 60);
+        else setTimeout(()=>toast("Sign in at the bottom of the page, then share it again"), 300);
+      }
+    }
     loaded = true;
     if (!sheet.innerHTML) render(); else { const scrollY=window.scrollY; render(); window.scrollTo(0,scrollY); }
   }, err=>{ clearTimeout(timer); app.innerHTML=`<div class="empty">Couldn't load the guide (${esc(err.code)}). Reload the page to try again.</div>`; });

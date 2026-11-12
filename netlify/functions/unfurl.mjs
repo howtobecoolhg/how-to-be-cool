@@ -55,6 +55,28 @@ export default async (req) => {
       if (!res.ok || !type.startsWith("image/")) return json({ error: "Couldn't get that image." }, 502);
       return new Response(body, { headers: { "content-type": type, "cache-control": "no-store" } });
     }
+    const host = target.hostname.toLowerCase();
+    // Instagram only shares post details with Meta-approved apps, so don't try; just keep the link.
+    if (host === "instagram.com" || host.endsWith(".instagram.com")) {
+      return json({ title: "", description: "", image: "", site: "Instagram", cat: "", type: "", city: "", price: "", url: target.href,
+        notice: "Instagram doesn't share post details with other sites. Add a name and category yourself." });
+    }
+    // TikTok: use TikTok's official public preview service (oEmbed) for the caption, creator and thumbnail.
+    if (host === "tiktok.com" || host.endsWith(".tiktok.com")) {
+      let videoUrl = target.href;
+      if (/^(vm|vt)\./.test(host) || /\/t\//.test(target.pathname)) {
+        const r = await fetch(videoUrl, { method: "HEAD", redirect: "follow", headers: { "user-agent": UA }, signal: AbortSignal.timeout(10000) });
+        if (safeTarget(r.url)) videoUrl = r.url.split("?")[0];
+      }
+      const o = await fetch("https://www.tiktok.com/oembed?url=" + encodeURIComponent(videoUrl), { headers: { "user-agent": UA }, signal: AbortSignal.timeout(10000) })
+        .then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+      const caption = String(o.title || "").replace(/\s+/g, " ").trim();
+      const who = o.author_unique_id ? "@" + o.author_unique_id : (o.author_name || "");
+      const short = caption.replace(/(\s#[\wÀ-￿]+)+\s*$/u, "").split(/(?<=[.!?])\s/)[0].slice(0, 80).trim();
+      return json({ title: short, description: [caption.slice(0, 360), who && `from ${who} on TikTok`].filter(Boolean).join(" · "),
+        image: o.thumbnail_url || "", site: "TikTok", cat: "", type: "", city: "", price: "", url: videoUrl,
+        notice: caption ? "" : "TikTok didn't share this post's details (it may be private). Add a name yourself." });
+    }
     const { res, finalUrl, body } = await fetchCapped(target.href, 2_000_000, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8");
     if (!res.ok) return json({ error: `That page answered with an error (${res.status}).` }, 502);
     const info = parsePage(body.toString("utf8"), finalUrl);
