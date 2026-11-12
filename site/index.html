@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794453701"></script>
+<script src="config.js?v=1794453789"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794453701"></script>
+<script src="shim.js?v=1794453789"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -75,9 +75,9 @@ nav.tabs{max-width:1100px;margin:10px auto 0;display:flex;gap:6px;flex-wrap:wrap
 main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 56px}
 
 /* big specimen line */
-.hero-title.split{display:flex;align-items:center;flex-wrap:nowrap;column-gap:.24em;font-size:min(7.4vw,92px)}
+.hero-title.split{display:flex;align-items:center;flex-wrap:nowrap;column-gap:.24em;font-size:min(5.3vw,66px)}
 .hero-stack{display:flex;flex-direction:column;font-size:.4em;line-height:.98;white-space:nowrap}
-@media (max-width:640px){.hero-title.split{flex-wrap:wrap;row-gap:.08em;font-size:clamp(40px,13vw,72px)}}
+@media (max-width:700px){.hero-title.split{flex-wrap:wrap;row-gap:.08em;font-size:clamp(40px,12vw,72px)}}
 .hero-title{color:var(--headline);font:400 clamp(40px,10vw,112px)/.92 var(--display);margin:4px 0 22px;text-transform:uppercase;letter-spacing:.005em;text-wrap:balance;overflow-wrap:anywhere}
 
 /* boxes: hairline frames, tiny uppercase labels */
@@ -225,7 +225,7 @@ select:not([multiple]){-webkit-appearance:none;appearance:none;padding-right:34p
   </nav>
 </header>
 
-<div style="max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:22px"><h1 class="hero-title split" id="heroT"><span class="hero-big">A guide to</span><span class="hero-stack"><span>Good taste</span><span>&amp; good times</span></span></h1></div>
+<div style="max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:22px"><h1 class="hero-title split" id="heroT"><span class="hero-big">A guide to having</span><span class="hero-stack"><span>Good taste</span><span>&amp; good times</span></span></h1></div>
 <main id="app" style="padding-top:0">
   <div class="empty" id="loading">Loading your guide...</div>
 </main>
@@ -363,7 +363,7 @@ function setHero(r){
   else if (r==="outfits") t="Outfits";
   else if (r==="lists") t="Lists to share";
   else if (r.startsWith("list-")) t = lists.find(l=>l.id===r.slice(5))?.name || "A list";
-  if (!t) { h.classList.add("split"); h.innerHTML='<span class="hero-big">A guide to</span><span class="hero-stack"><span>Good taste</span><span>&amp; good times</span></span>'; } else { h.classList.remove("split"); h.textContent=t; }
+  if (!t) { h.classList.add("split"); h.innerHTML='<span class="hero-big">A guide to having</span><span class="hero-stack"><span>Good taste</span><span>&amp; good times</span></span>'; } else { h.classList.remove("split"); h.textContent=t; }
 }
 function render(){
   if (loaded) fillCities();
@@ -413,7 +413,7 @@ function renderHome(){
       <section class="box"><h2>About</h2><div class="bd">
         <div class="profile">
           <div class="avatar" aria-hidden="true">H</div>
-          <div><h1>things 2 do, eat, buy + make</h1>
+          <div><h1>a guide to having good taste &amp; good times</h1>
             <p>Austin, TX<br>${todo.length} to try · ${items.filter(i=>i.status==="done").length} done</p>
             <div class="mood"><label for="moodSel"><b>Mood:</b></label>
               <select id="moodSel"><option value="">pick one...</option>${Object.keys(MOODS).map(m=>`<option ${st.mood===m?"selected":""}>${m}</option>`).join("")}</select></div>
