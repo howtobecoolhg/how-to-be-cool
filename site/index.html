@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794454058"></script>
+<script src="config.js?v=1794454377"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794454058"></script>
+<script src="shim.js?v=1794454377"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -199,6 +199,11 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
 #authbar label{text-transform:uppercase;letter-spacing:.08em}
 .foot{text-align:center;font:500 10px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:28px}
 .lc{text-transform:none;letter-spacing:0;font-weight:500}
+.two:has(> .field[hidden]){grid-template-columns:1fr}
+/* type fields with suggestions: same arrow as the dropdowns, browser's own marker hidden */
+input[list]{padding-right:34px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center;background-size:11px 7px}
+input[list]::-webkit-calendar-picker-indicator{opacity:0;cursor:pointer;width:24px}
 /* dropdowns: our own arrow, set in from the right edge */
 select:not([multiple]){-webkit-appearance:none;appearance:none;padding-right:34px!important;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -301,7 +306,7 @@ function buildCats(){
   if (st.feedCat!=="all" && !CATS[st.feedCat]) st.feedCat="all";
 }
 const statusWord = it => statusFor(it.cat)[it.status]||it.status;
-const badge = it => it.cat==="words" ? "" : `<span class="badge ${esc(it.status)}">${esc(statusWord(it))}</span>`;
+const badge = it => "";
 const stars = n => n ? `<span class="stars" aria-label="${n} of 5">${"★".repeat(n)}${"☆".repeat(5-n)}</span>` : "";
 const NONCITY = ["","Anywhere","Online","Book","Texas"];
 const cityOf = it => NONCITY.includes((it.place||"").trim()) ? "" : it.place.trim();
@@ -328,7 +333,7 @@ function canonType(t){ const raw=String(t||"").trim(); if(!raw) return ""; const
   const best=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]; return fmtType(best?best[0]:raw); }
 function typeOptions(){ return [...new Set(items.map(i=>fmtType(i.type)).filter(Boolean))].sort().map(t=>`<option value="${esc(t)}">`).join(""); }
 const CITY_CATS=["eat","do"];
-const usesCity = cat => CITY_CATS.includes(cat);
+const usesCity = cat => CATS[cat]?.usesCity ?? CITY_CATS.includes(cat);
 function sub(it){ return [fmtType(it.type), cityOf(it), it.who?("for "+it.who):"", it.note].filter(Boolean).map(esc).join(" · "); }
 function linkFor(it){
   if (it.link) return it.link;
@@ -398,14 +403,14 @@ function startWords(){
   show(); restart();
 }
 function renderHome(){
-  const todo = items.filter(i=>i.status==="todo");
+  const todo = items;
   if (st.top8.length===0 || st.top8.some(id=>!items.find(i=>i.id===id))) {
     const pool = (st.mood ? todo.filter(i=>MOODS[st.mood].includes(i.cat)) : todo.filter(i=>["eat","do"].includes(i.cat))).filter(inCity);
     st.top8 = shuffled(pool, Math.random()).slice(0,8).map(i=>i.id);
   }
   const top8 = st.top8.map(id=>items.find(i=>i.id===id)).filter(Boolean);
   const count = c => items.filter(i=>i.cat===c);
-  const gifts = items.filter(i=>i.cat==="gift" && i.who && i.status==="todo");
+  const gifts = items.filter(i=>i.cat==="gift" && i.who);
   const people = [...new Set(gifts.map(g=>g.who))];
   app.innerHTML = `
   <div class="grid-home">
@@ -414,13 +419,13 @@ function renderHome(){
         <div class="profile">
           <div class="avatar" aria-hidden="true">H</div>
           <div><h1>a guide to having good taste &amp; good times</h1>
-            <p>Austin, TX<br>${todo.length} to try · ${items.filter(i=>i.status==="done").length} done</p>
+            <p>Austin, TX<br>${items.length} things</p>
             <div class="mood"><label for="moodSel"><b>Mood:</b></label>
               <select id="moodSel"><option value="">pick one...</option>${Object.keys(MOODS).map(m=>`<option ${st.mood===m?"selected":""}>${m}</option>`).join("")}</select></div>
           </div>
         </div></div></section>
       <section class="box"><h2>Details${canEdit?`<span class="sub"><button class="danger" id="editCats" type="button">edit categories</button></span>`:""}</h2><div class="bd stats">
-        ${Object.entries(CATS).map(([k,c])=>`<a href="#browse" data-gocat="${k}">${esc(c.label)}</a><b>${count(k).filter(i=>i.status==="todo").length}<span style="color:var(--muted)">/${count(k).length}</span></b>`).join("")}
+        ${Object.entries(CATS).map(([k,c])=>`<a href="#browse" data-gocat="${k}">${esc(c.label)}</a><b>${count(k).length}</b>`).join("")}
       </div></section>
       ${people.length?`<section class="box"><h2>Gift <span class="sub">${people.length} people</span></h2><div class="bd stats" style="grid-template-columns:auto 1fr">
         ${people.map(p=>`<a href="#browse" data-goq="${esc(p)}">${esc(p)}</a><span>${gifts.filter(g=>g.who===p).map(g=>esc(g.title)).join(", ")}</span>`).join("")}
@@ -445,7 +450,7 @@ function renderHome(){
   startWords();
   $("#moodSel").onchange = e=>{ st.mood=e.target.value; st.top8=[]; render(); };
   app.querySelectorAll("[data-gocat]").forEach(a=>a.onclick=()=>{ st.keepBrowse=true; st.cat=a.dataset.gocat; st.q=""; $("#q").value=""; });
-  app.querySelectorAll("[data-goq]").forEach(a=>a.onclick=()=>{ st.keepBrowse=true; st.cat="gift"; st.q=a.dataset.goq; $("#q").value=st.q; st.status="all"; });
+  app.querySelectorAll("[data-goq]").forEach(a=>a.onclick=()=>{ st.keepBrowse=true; st.cat="gift"; st.q=a.dataset.goq; $("#q").value=st.q; });
 }
 
 function row(it, showCat){
@@ -456,32 +461,31 @@ function renderBrowse(){
   const base = items.filter(i => (st.cat==="all"||i.cat===st.cat) && inCity(i));
   const types = [...new Set(base.map(i=>i.type).filter(Boolean))].sort();
   if (!types.includes(st.type)) st.type="all";
-  const list = base.filter(i => (st.status==="all"||i.status===st.status) && (st.type==="all"||i.type===st.type) && matches(i, st.q));
+  const list = base.filter(i => (st.type==="all"||i.type===st.type) && matches(i, st.q));
   const groups = {};
   list.forEach(i => { const k = st.cat==="all" ? (CATS[i.cat]?.label||i.cat) : (fmtType(i.type)||"Other"); (groups[k] ||= []).push(i); });
   const keys = Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length || a.localeCompare(b));
-  const catCount = k => items.filter(i=>(k==="all"||i.cat===k) && (st.status==="all"||i.status===st.status) && matches(i,st.q)).length;
+  const catCount = k => items.filter(i=>(k==="all"||i.cat===k) && inCity(i) && matches(i,st.q)).length;
   app.innerHTML = `
     <div class="filters">
       <div class="row">${[["all",{label:"Everything"}],...Object.entries(CATS)].map(([k,c])=>`<button class="pill small" aria-pressed="${st.cat===k}" data-cat="${k}">${esc(c.label)} <span class="n">${catCount(k)}</span></button>`).join("")}</div>
       <div class="row">
-        <label for="fStatus">Show</label><select id="fStatus">${[["todo","To try / want"],["done","Done / got"],["maybe","Unsure"],["nope","Not for me"],["all","Everything"]].map(([v,l])=>`<option value="${v}" ${st.status===v?"selected":""}>${l}</option>`).join("")}</select>
+        <label>Show everything</label>
         <label for="fCity"><span class="lc">in</span> City</label><select id="fCity">${cityOptions()}</select>
         <label for="fType"><span class="lc">by</span> Type</label><select id="fType"><option value="all">Any type</option>${types.map(p=>`<option value="${esc(p)}" ${st.type===p?"selected":""}>${esc(fmtType(p))}</option>`).join("")}</select>
       </div>
     </div>
     <p class="notice">${list.length} result${list.length===1?"":"s"}${st.q?` for "<b>${esc(st.q)}</b>" <button class="danger" id="clearQ">clear search</button>`:""}</p>
     ${keys.length ? keys.map(k=>`<div class="group"><h3>${esc(k)} (${groups[k].length})</h3><ul class="list">${groups[k].sort((a,b)=>a.title.localeCompare(b.title)).map(row).join("")}</ul></div>`).join("")
-      : `<div class="empty">Nothing matches. Try "Everything" under Show, or clear the search.</div>`}`;
+      : `<div class="empty">Nothing matches. Try another city or type, or clear the search.</div>`}`;
   app.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{ st.cat=b.dataset.cat; render(); });
-  $("#fStatus").onchange=e=>{ st.status=e.target.value; savePrefs(); render(); };
   $("#fType").onchange=e=>{ st.type=e.target.value; render(); };
   $("#fCity").onchange=e=>{ st.city=e.target.value; st.top8=[]; savePrefs(); render(); };
   const cq=$("#clearQ"); if (cq) cq.onclick=()=>{ st.q=""; $("#q").value=""; render(); };
 }
 
 function renderFeed(){
-  let pool = items.filter(i=>i.status==="todo" && (st.feedCat==="all"||i.cat===st.feedCat) && inCity(i));
+  let pool = items.filter(i=>(st.feedCat==="all"||i.cat===st.feedCat) && inCity(i));
   pool = shuffled(pool, st.seed);
   const cards = pool.map(it=>{
     if (it.cat==="words") return `<button class="card quote" data-open="${esc(it.id)}">"${esc(it.title)}"${it.who?`<br><small style="font:600 12px var(--ui);color:var(--muted)">- ${esc(it.who)}</small>`:""}</button>`;
@@ -493,10 +497,10 @@ function renderFeed(){
   });
   app.innerHTML = `
     <div class="feedbar">
-      ${[["all",{label:"Everything"}],...Object.entries(CATS)].filter(([k])=>k==="all"||items.some(i=>i.cat===k&&i.status==="todo")).map(([k,c])=>`<button class="pill small" aria-pressed="${st.feedCat===k}" data-fcat="${k}">${esc(c.label)}</button>`).join("")}
+      ${[["all",{label:"Everything"}],...Object.entries(CATS)].filter(([k])=>k==="all"||items.some(i=>i.cat===k)).map(([k,c])=>`<button class="pill small" aria-pressed="${st.feedCat===k}" data-fcat="${k}">${esc(c.label)}</button>`).join("")}
       <button class="pill small lime" id="shuf">Shuffle</button>
     </div>
-    ${cards.length?`<div class="masonry">${cards.join("")}</div>`:`<div class="empty">Nothing left to try here. Go add something new.</div>`}`;
+    ${cards.length?`<div class="masonry">${cards.join("")}</div>`:`<div class="empty">Nothing here yet. Go add something new.</div>`}`;
   app.querySelectorAll("[data-fcat]").forEach(b=>b.onclick=()=>{ st.feedCat=b.dataset.fcat; render(); });
   $("#shuf").onclick=()=>{ st.seed=Math.random(); render(); window.scrollTo({top:0}); };
 }
@@ -521,8 +525,7 @@ function openItem(id){
         <select id="toList" style="flex:1;min-width:0;padding:4px;border:2px solid var(--ink);background:#fff">${lists.map(l=>`<option value="${esc(l.id)}">${esc(l.name)}${entriesOf(l).some(e=>e.itemId===it.id)?" (already on it)":""}</option>`).join("")}<option value="__new">+ New list...</option></select>
         <input id="toListName" placeholder="List name" hidden style="flex:1;min-width:0;padding:4px 8px;border:2px solid var(--ink)">
         <button class="pill small" type="button" id="toListBtn">Add</button></div></div>
-      <div class="field"><label>Status</label><div class="row">${Object.entries(statusSet).map(([k,l])=>`<button class="pill small" aria-pressed="${it.status===k}" data-st="${k}">${esc(l)}</button>`).join("")}</div></div>
-      ${it.status==="done"?`<div class="field"><label>Rating</label><div>${[1,2,3,4,5].map(n=>`<button class="ratebtn ${n<=(it.rating||0)?"on":""}" data-rate="${n}" aria-label="${n} stars">★</button>`).join("")}</div></div>`:""}
+      ${`<div class="field"><label>Rating</label><div>${[1,2,3,4,5].map(n=>`<button class="ratebtn ${n<=(it.rating||0)?"on":""}" data-rate="${n}" aria-label="${n} stars">★</button>`).join("")}</div></div>`}
       <div class="two">
         <div class="field"><label for="eTitle">Name</label><input id="eTitle" value="${esc(it.title)}"></div>
         <div class="field"><label for="eCat">Category</label><select id="eCat">${Object.entries(CATS).map(([k,cc])=>`<option value="${k}" ${k===it.cat?"selected":""}>${esc(cc.label)}</option>`).join("")}${CATS[it.cat]?"":`<option value="${esc(it.cat)}" selected>${esc(it.cat)}</option>`}</select></div>
@@ -538,7 +541,7 @@ function openItem(id){
       <label class="checkline"><input type="checkbox" id="ePrivate" ${it.private?"checked":""}> Private: only you can see it</label>
       <div class="row" style="justify-content:space-between"><button class="pill" id="saveBtn">Save</button><button class="danger" id="delBtn">Delete this item</button></div>
       <div id="delConfirm" hidden class="row"><span>Delete "${esc(it.title)}" for good?</span><button class="pill small on" id="delYes">Yes, delete</button><button class="pill small" id="delNo">Keep it</button></div>
-      `:`<div>${badge(it)} ${stars(it.rating)}</div>`}
+      `:`<div>${stars(it.rating)}</div>`}
     </div></div></div>`;
   $("#closeX").onclick=closeSheet;
   $("#scrim").onclick=e=>{ if(e.target.id==="scrim") closeSheet(); };
@@ -553,7 +556,6 @@ function openItem(id){
     if (await saveEntries(id, [...entriesOf(l), entryFromItem(it)])) toast("Added to "+(lists.find(x=>x.id===id)?.name||tln.value.trim()||"list"));
   };
   $("#eCat").onchange=()=>{ $("#eCityWrap").hidden=!usesCity($("#eCat").value); };
-  sheet.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>patch(it,{status:b.dataset.st},true));
   sheet.querySelectorAll("[data-rate]").forEach(b=>b.onclick=()=>patch(it,{rating:+b.dataset.rate===it.rating?0:+b.dataset.rate},true));
   $("#saveBtn").onclick=async()=>{
     const nt=$("#eTitle").value.trim(); if(!nt){ toast("Give it a name first"); return; }
@@ -591,10 +593,7 @@ function openAdd(mode="item"){
     ${mode==="manage" ? manageHTML() : ""}
     ${mode==="manage" ? "" : mode==="item" ? `
     <form class="win-b" id="addForm">
-      <div class="two">
-        <div class="field"><label for="aCat">Category</label><select id="aCat">${Object.entries(CATS).map(([k,c])=>`<option value="${k}">${esc(c.label)}</option>`).join("")}</select></div>
-        <div class="field"><label for="aStatus">Status</label><select id="aStatus"></select></div>
-      </div>
+      <div class="field"><label for="aCat">Category</label><select id="aCat">${Object.entries(CATS).map(([k,c])=>`<option value="${k}">${esc(c.label)}</option>`).join("")}</select></div>
       <div class="field"><label for="aTitle">Name</label><input id="aTitle" required placeholder="Palm Pizza"></div>
       <div class="two">
         <div class="field"><label for="aType">Type</label><input id="aType" list="typeList" placeholder="pizza, vintage, shoes..."><datalist id="typeList">${types.map(t=>`<option value="${esc(t)}">`).join("")}</datalist></div>
@@ -608,10 +607,10 @@ function openAdd(mode="item"){
       <div class="row"><button class="pill lime" type="submit">Add to guide</button></div>
     </form>` : `
     <form class="win-b" id="catForm">
-      <div class="field"><label for="cName">Category name</label><input id="cName" required placeholder="Podcasts to hear"></div>
+      <div class="field"><label for="cName">Category name</label><input id="cName" required placeholder="Shop"></div>
+      <label class="checkline"><input type="checkbox" id="cCity"> Items in this category have a city (places to go)</label>
       <div class="two">
-        <div class="field"><label for="cTodo">Word for "not yet"</label><input id="cTodo" placeholder="to hear"></div>
-        <div class="field"><label for="cDone">Word for "done"</label><input id="cDone" placeholder="heard"></div>
+
       </div>
       <div class="field"><label>Color</label><div class="row" id="cColors">${SWATCHES.map((sw,i)=>`<button type="button" class="swatch" data-sw="${i}" aria-pressed="${i===0}" aria-label="Color ${i+1}" style="width:30px;height:30px;border:2px solid var(--ink);border-radius:50%;cursor:pointer;background:linear-gradient(160deg,${sw[0]},${sw[1]});box-shadow:${i===0?"0 0 0 3px var(--hot)":"none"}"></button>`).join("")}</div></div>
       <div class="field"><label>Icon</label><div class="row" id="cIcons">${iconKeys.map((k,i)=>`<button type="button" data-ic="${k}" aria-pressed="${i===0}" aria-label="${k} icon" style="width:34px;height:34px;border:2px solid var(--ink);background:${i===0?"var(--plaid)":"#fff"};cursor:pointer;padding:5px"><svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%" aria-hidden="true">${ICON[k]}</svg></button>`).join("")}</div></div>
@@ -633,20 +632,20 @@ function openAdd(mode="item"){
       const label=$("#cName").value.trim(); if(!label) return;
       if (Object.values(CATS).some(c=>c.label.toLowerCase()===label.toLowerCase())) { toast("You already have that category"); return; }
       const key="c-"+label.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40);
-      const doc={label,c1:SWATCHES[sw][0],c2:SWATCHES[sw][1],icon:ic,todo:$("#cTodo").value.trim(),done:$("#cDone").value.trim(),added:new Date().toISOString()};
+      const doc={label,c1:SWATCHES[sw][0],c2:SWATCHES[sw][1],icon:ic,usesCity:$("#cCity").checked,added:new Date().toISOString()};
       try { await db.collection("categories").doc(key).set(doc); customDocs[key]=doc; buildCats(); toast("Added "+label); openAdd("item"); $("#aCat").value=key; $("#aCat").onchange(); }
       catch(err){ toast("Couldn't add category: "+(err.message||err.code)); }
     };
     return;
   }
-  const fillStatus=()=>{ const s=statusFor($("#aCat").value); $("#aStatus").innerHTML=["todo","done","maybe"].map(k=>`<option value="${k}">${esc(s[k]||k)}</option>`).join(""); const pw=$("#aPlaceWrap"); if (pw) pw.hidden=!usesCity($("#aCat").value); const pv=$("#aPrivate"); if (pv) pv.checked = $("#aCat").value==="gift"; };
+  const fillStatus=()=>{ const pw=$("#aPlaceWrap"); if (pw) pw.hidden=!usesCity($("#aCat").value); const pv=$("#aPrivate"); if (pv) pv.checked = $("#aCat").value==="gift"; };
   $("#aCat").onchange=fillStatus; fillStatus();
   $("#aTitle").focus();
   $("#addForm").onsubmit=async e=>{
     e.preventDefault();
     const cat=$("#aCat").value, title=$("#aTitle").value.trim(); if(!title) return;
     const id=(cat+"-"+title).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50)+"-"+Math.random().toString(36).slice(2,6);
-    const doc={cat,title,type:canonType($("#aType").value),place:(usesCity(cat)?(st.lastCity=$("#aPlace").value.trim(), savePrefs(), st.lastCity):""),status:$("#aStatus").value,note:$("#aNote").value.trim(),
+    const doc={cat,title,type:canonType($("#aType").value),place:(usesCity(cat)?(st.lastCity=$("#aPlace").value.trim(), savePrefs(), st.lastCity):""),status:"todo",note:$("#aNote").value.trim(),
       who:$("#aWho").value.trim(),link:$("#aLink").value.trim(),img:"",rating:0,private:$("#aPrivate").checked,added:new Date().toISOString()};
     const f=$("#aPhoto")?.files?.[0]; if (f){ const a=await upload(f); if(a) doc.img=a; }
     try { await db.collection("items").doc(id).set(doc); closeSheet(); toast("Added "+title); }
@@ -660,8 +659,7 @@ function manageHTML(){
     return `<div style="border:2px solid var(--ink);padding:10px;display:grid;gap:8px;background:#fff">
       <div class="row"><span aria-hidden="true" style="width:18px;height:18px;border:2px solid var(--ink);border-radius:50%;background:linear-gradient(160deg,${c.c1},${c.c2})"></span><b>${esc(c.label)}</b><small style="color:var(--muted)">${n} item${n===1?"":"s"}</small></div>
       <div class="field"><label for="mn-${k}">Name</label><input id="mn-${k}" value="${esc(c.label)}"></div>
-      ${k==="words"?"":`<div class="two"><div class="field"><label for="mt-${k}">Word for "not yet"</label><input id="mt-${k}" value="${esc(w.todo||"")}"></div>
-        <div class="field"><label for="md-${k}">Word for "done"</label><input id="md-${k}" value="${esc(w.done||"")}"></div></div>`}
+      <label class="checkline"><input type="checkbox" id="mc-${k}" ${usesCity(k)?"checked":""}> Items have a city</label>
       <div class="row" style="justify-content:space-between"><button class="pill small" type="button" data-save="${k}">Save</button>${keys.length>1?`<button class="danger" type="button" data-del="${k}">Delete category</button>`:""}</div>
       <div class="row" hidden data-confirm="${k}">
         ${n?`<label for="mv-${k}">Move its ${n} item${n===1?"":"s"} to</label><select id="mv-${k}">${keys.filter(x=>x!==k).map(x=>`<option value="${x}">${esc(CATS[x].label)}</option>`).join("")}</select>`:`<span>Delete "${esc(c.label)}"?</span>`}
@@ -673,7 +671,7 @@ function wireManage(){
   sheet.querySelectorAll("[data-save]").forEach(b=>b.onclick=async()=>{
     const k=b.dataset.save, label=$("#mn-"+k).value.trim(); if(!label){ toast("Give it a name first"); return; }
     const doc={...(customDocs[k]||{}), label};
-    if ($("#mt-"+k)) { doc.todo=$("#mt-"+k).value.trim(); doc.done=$("#md-"+k).value.trim(); }
+    doc.usesCity=$("#mc-"+k).checked;
     if (!BASE_CATS[k]) Object.assign(doc,{c1:CATS[k].c1,c2:CATS[k].c2,icon:CATS[k].icon||"do"});
     try { b.disabled=true; await ref(k).set(doc); customDocs[k]=doc; buildCats(); toast("Saved "+label); openAdd("manage"); }
     catch(e){ b.disabled=false; toast("Couldn't save: "+(e.message||e.code)); }
@@ -939,13 +937,13 @@ document.addEventListener("click", e=>{
   const of = e.target.closest("[data-outfit]"); if (of) { e.preventDefault(); openOutfit(of.dataset.outfit); }
 });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeSheet(); });
-$("#searchForm").onsubmit = e=>{ e.preventDefault(); st.q=$("#q").value.trim(); if (st.q) { st.status="all"; st.cat="all"; } if (route()!=="browse") { st.keepBrowse=true; location.hash="browse"; } else render(); };
+$("#searchForm").onsubmit = e=>{ e.preventDefault(); st.q=$("#q").value.trim(); if (st.q) { st.cat="all"; } if (route()!=="browse") { st.keepBrowse=true; location.hash="browse"; } else render(); };
 $("#q").addEventListener("input", ()=>{ if (route()==="browse"){ st.q=$("#q").value.trim(); render(); $("#q").focus(); } });
 $("#addBtn").onclick = ()=>openAdd("item");
 $("#citySel").onchange = e=>{ st.city=e.target.value; st.top8=[]; savePrefs(); render(); };
 window.addEventListener("hashchange", ()=>{
   if (route()!=="browse" && st.q) { st.q=""; $("#q").value=""; }
-  if (route()==="browse" && !st.keepBrowse) { st.q=""; $("#q").value=""; st.cat="all"; st.status="all"; st.type="all"; }
+  if (route()==="browse" && !st.keepBrowse) { st.q=""; $("#q").value=""; st.cat="all"; st.type="all"; }
   st.keepBrowse=false;
   render(); window.scrollTo({top:0}); });
 render();
