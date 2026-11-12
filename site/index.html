@@ -5,9 +5,9 @@
 <meta name="description" content="Things to do, eat, buy and make.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<script src="config.js?v=1794454864"></script>
+<script src="config.js?v=1794455183"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="shim.js?v=1794454864"></script>
+<script src="shim.js?v=1794455183"></script>
 </head><body>
 
 <title>How to Be Cool</title>
@@ -206,9 +206,15 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
 .home-grid > .col > .box:last-child{flex:1}
 .two:has(> .field[hidden]){grid-template-columns:1fr}
 /* type fields with suggestions: same arrow as the dropdowns, browser's own marker hidden */
-input[list]{padding-right:34px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+.field{position:relative}
+.sugg{position:absolute;left:0;right:0;top:100%;margin-top:-1.5px;z-index:6;max-height:224px;overflow:auto;background:var(--paper);border:1.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+.sugg button{display:block;width:100%;text-align:left;border:0;border-top:1px solid rgba(17,17,17,.18);background:transparent;padding:7px 11px;font:500 13px var(--ui);color:var(--ink);cursor:pointer}
+.sugg button:first-child{border-top:0}
+.sugg button:hover,.sugg button.on{background:var(--ink);color:var(--paper)}
+input[data-sugg],input[list]{padding-right:34px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 13px center;background-size:11px 7px}
 input[list]::-webkit-calendar-picker-indicator{opacity:0;cursor:pointer;width:24px}
+input[data-sugg]::-webkit-calendar-picker-indicator{display:none}
 /* dropdowns: our own arrow, set in from the right edge */
 select:not([multiple]){-webkit-appearance:none;appearance:none;padding-right:34px!important;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -336,6 +342,37 @@ function typeKey(t){ let k=String(t||"").trim().toLowerCase().replace(/\s+/g," "
 function canonType(t){ const raw=String(t||"").trim(); if(!raw) return ""; const k=typeKey(raw);
   const counts={}; items.forEach(i=>{ if(i.type && typeKey(i.type)===k) counts[i.type]=(counts[i.type]||0)+1; });
   const best=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]; return fmtType(best?best[0]:raw); }
+function typeList(){ return [...new Set(items.map(i=>fmtType(i.type)).filter(Boolean))].sort(); }
+function cityList(){ return [...new Set(items.map(cityOf).filter(Boolean))].sort(); }
+/* Suggestion dropdown in the site's own style (replaces the browser's datalist popup). */
+function attachSuggest(inp, getOpts){
+  if (!inp) return;
+  inp.removeAttribute("list"); inp.setAttribute("data-sugg",""); inp.setAttribute("autocomplete","off");
+  const host = inp.closest(".field") || inp.parentElement;
+  let box=null, idx=-1, all=false, opts=[];
+  const close=()=>{ if(box){ box.remove(); box=null; } idx=-1; };
+  const pick=v=>{ inp.value=v; close(); inp.dispatchEvent(new Event("change",{bubbles:true})); };
+  const paint=()=>{ box.querySelectorAll("button").forEach((b,i)=>{ b.classList.toggle("on", i===idx); if(i===idx) b.scrollIntoView({block:"nearest"}); }); };
+  const open=()=>{
+    const q = all ? "" : inp.value.trim().toLowerCase();
+    opts = getOpts().filter(o => !q || o.toLowerCase().includes(q));
+    if (!opts.length || (opts.length===1 && opts[0].toLowerCase()===q)) { close(); return; }
+    if (!box) { box=document.createElement("div"); box.className="sugg"; box.setAttribute("role","listbox"); host.appendChild(box); }
+    box.innerHTML = opts.slice(0,60).map(o=>`<button type="button" role="option" tabindex="-1">${esc(o)}</button>`).join("");
+    box.querySelectorAll("button").forEach((b,i)=>b.addEventListener("mousedown", e=>{ e.preventDefault(); pick(opts[i]); }));
+    idx=-1;
+  };
+  inp.addEventListener("focus", ()=>{ all=true; open(); });
+  inp.addEventListener("input", ()=>{ all=false; open(); });
+  inp.addEventListener("blur", ()=>setTimeout(close,120));
+  inp.addEventListener("mousedown", e=>{ if (e.offsetX > inp.clientWidth-36 && document.activeElement===inp) { e.preventDefault(); if (box) close(); else { all=true; open(); } } });
+  inp.addEventListener("keydown", e=>{
+    if (e.key==="ArrowDown"||e.key==="ArrowUp") { if(!box){ all=true; open(); } if(!box) return; e.preventDefault();
+      const n=box.querySelectorAll("button").length; idx = e.key==="ArrowDown" ? (idx+1)%n : (idx<=0?n-1:idx-1); paint(); }
+    else if (e.key==="Enter" && box && idx>=0) { e.preventDefault(); pick(opts[idx]); }
+    else if (e.key==="Escape" && box) { e.stopPropagation(); close(); }
+  });
+}
 function typeOptions(){ return [...new Set(items.map(i=>fmtType(i.type)).filter(Boolean))].sort().map(t=>`<option value="${esc(t)}">`).join(""); }
 const CITY_CATS=["eat","do"];
 const usesCity = cat => CATS[cat]?.usesCity ?? CITY_CATS.includes(cat);
@@ -560,6 +597,7 @@ function openItem(id){
     if (await saveEntries(id, [...entriesOf(l), entryFromItem(it)])) toast("Added to "+(lists.find(x=>x.id===id)?.name||tln.value.trim()||"list"));
   };
   $("#eCat").onchange=()=>{ $("#eCityWrap").hidden=!usesCity($("#eCat").value); };
+  attachSuggest($("#eType"), typeList); attachSuggest($("#eCity"), cityList);
   sheet.querySelectorAll("[data-rate]").forEach(b=>b.onclick=()=>patch(it,{rating:+b.dataset.rate===it.rating?0:+b.dataset.rate},true));
   $("#saveBtn").onclick=async()=>{
     const nt=$("#eTitle").value.trim(); if(!nt){ toast("Give it a name first"); return; }
@@ -644,6 +682,7 @@ function openAdd(mode="item"){
   }
   const fillStatus=()=>{ const pw=$("#aPlaceWrap"); if (pw) pw.hidden=!usesCity($("#aCat").value); const pv=$("#aPrivate"); if (pv) pv.checked = $("#aCat").value==="gift"; };
   $("#aCat").onchange=fillStatus; fillStatus();
+  attachSuggest($("#aType"), typeList); attachSuggest($("#aPlace"), cityList);
   $("#aTitle").focus();
   $("#addForm").onsubmit=async e=>{
     e.preventDefault();
@@ -819,6 +858,7 @@ function renderList(id){
   app.querySelectorAll("[data-up]").forEach(b=>b.onclick=async()=>{ const a=entriesOf(l).slice(), i=a.findIndex(e=>e.key===b.dataset.up); if(i>0){ [a[i-1],a[i]]=[a[i],a[i-1]]; if (await saveEntries(id,a)) renderList(id); } });
   app.querySelectorAll("[data-enote]").forEach(t=>t.onchange=async()=>{ const a=entriesOf(l).map(e=>e.key===t.dataset.enote?{...e, note:t.value.trim()}:e); if (await saveEntries(id,a)) toast("Note saved"); });
   const nc=$("#neCat"); if (nc) { const sync=()=>{ $("#neCityWrap").hidden=!usesCity(nc.value); }; nc.onchange=sync; sync(); }
+  attachSuggest($("#neType"), typeList); attachSuggest($("#neCity"), cityList);
   const ne=$("#newEntry"); if (ne) ne.onsubmit=async e=>{
     e.preventDefault();
     const en={key:ekey(), itemId:"", title:$("#neTitle").value.trim(), cat:$("#neCat").value, type:canonType($("#neType").value), city:(usesCity($("#neCat").value)?$("#neCity").value.trim():""), note:$("#neNote").value.trim(), link:$("#neLink").value.trim(), img:""};
@@ -931,6 +971,7 @@ function openOutfitForm(o=null){
     try { await db.collection("outfits").doc(id).set(doc); closeSheet(); toast(o?"Saved outfit":"Logged outfit"); if (route()!=="outfits") location.hash="outfits"; }
     catch(err){ toast("Couldn't save: "+(err.message||err.code)); }
   };
+  attachSuggest($("#oCity"), cityList);
   $("#oName").focus();
 }
 
