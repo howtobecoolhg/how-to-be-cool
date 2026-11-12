@@ -79,6 +79,7 @@ main{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-le
 @media (max-width:760px){.grid-home{grid-template-columns:1fr}}
 
 .profile{display:flex;gap:12px}
+.avatar svg{width:62%;height:62%;fill:var(--paper);stroke:var(--paper);stroke-width:2.2;stroke-linejoin:round;overflow:visible;transform:rotate(12deg)}
 .avatar{width:84px;height:84px;flex:none;border:1.5px solid var(--ink);background:var(--ink);display:grid;place-items:center;font:400 44px/1 var(--display);color:var(--paper)}
 .profile h1{margin:0 0 4px;font:600 14px/1.35 var(--ui);color:var(--ink)}
 .profile p{margin:0;color:var(--muted);font-size:12px}
@@ -402,25 +403,24 @@ function renderHome(){
     <div class="col">
       <section class="box"><h2>About</h2><div class="bd">
         <div class="profile">
-          <div class="avatar" aria-hidden="true">H</div>
+          <div class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 3.5l4.6 4.6C9.7 7.7 10.8 7.5 12 7.5s2.3.2 3.4.6L20 3.5v9.2c0 4.9-3.4 7.8-8 7.8s-8-2.9-8-7.8z"/></svg></div>
           <div><h1>a guide to having good taste &amp; good times</h1>
             <p>Austin, TX<br>${items.length} things</p>
             <div class="mood"><label for="moodSel"><b>Mood:</b></label>
               <select id="moodSel"><option value="">pick one...</option>${Object.keys(MOODS).map(m=>`<option ${st.mood===m?"selected":""}>${m}</option>`).join("")}</select></div>
           </div>
         </div></div></section>
-      <section class="box"><h2>Details${canEdit?`<span class="sub"><button class="danger" id="editCats" type="button">edit categories</button></span>`:""}</h2><div class="bd stats">
+      <section class="box"><h2>Categories${canEdit?`<span class="sub"><button class="danger" id="editCats" type="button">edit categories</button></span>`:""}</h2><div class="bd stats">
         ${Object.entries(CATS).map(([k,c])=>`<a href="#browse" data-gocat="${k}">${esc(c.label)}</a><b>${count(k).length}</b>`).join("")}
       </div></section>
-      ${people.length?`<section class="box"><h2>Gift <span class="sub">${people.length} people</span></h2><div class="bd stats" style="grid-template-columns:auto 1fr">
+      ${people.length?`<section class="box"><h2>Gift lists <span class="sub">${people.length} people</span></h2><div class="bd stats" style="grid-template-columns:auto 1fr">
         ${people.map(p=>`<a href="#browse" data-goq="${esc(p)}">${esc(p)}</a><span>${gifts.filter(g=>g.who===p).map(g=>esc(g.title)).join(", ")}</span>`).join("")}
       </div></section>`:""}
     </div>
     <div class="col">
-      <section class="box"><h2>Quote</h2><div class="bd blurb" id="wordsBox" aria-live="polite"></div></section>
-      <section class="box"><h2>Top 8 ${(st.mood||st.city!=="all")?`<span class="sub">${[st.mood&&("feeling "+esc(st.mood)), st.city==="__none"?"no city":st.city!=="all"&&("in "+esc(st.city))].filter(Boolean).join(", ")}</span>`:""}</h2><div class="bd">
+      <section class="box"><h2>Feed ${(st.mood||st.city!=="all")?`<span class="sub">${[st.mood&&("feeling "+esc(st.mood)), st.city==="__none"?"no city":st.city!=="all"&&("in "+esc(st.city))].filter(Boolean).join(", ")}</span>`:""}</h2><div class="bd">
         <div class="top8">${top8.map(it=>`<button class="t8" data-open="${esc(it.id)}">${thumb(it)}<span>${esc(it.title)}</span></button>`).join("")}</div>
-        <div class="row" style="margin-top:12px;justify-content:space-between"><button class="pill small" id="reroll">Shuffle my Top 8</button><a href="#feed" class="pill small">Open the feed</a></div>
+        <div class="row" style="margin-top:12px;justify-content:space-between"><button class="pill small" id="reroll">Shuffle</button><a href="#feed" class="pill small">Open the feed</a></div>
       </div></section>
       <section class="box"><h2>New</h2><div class="bd" style="padding:0">
         ${(()=>{ const fresh=items.filter(i=>(i.added||"").length>10).sort((a,b)=>(b.added||"").localeCompare(a.added||"")).slice(0,6);
