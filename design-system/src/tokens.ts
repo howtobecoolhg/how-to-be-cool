@@ -25,9 +25,11 @@ export const color = {
   muted: "#6b3f60",
   /** Inside of form fields, a touch lighter than paper. */
   field: "#fff5fb",
-  /** Soft search field (the rounded, borderless-feeling one). */
+  /** Soft search field (the rounded pill search box). Its border is ink, like every other control. */
   softField: "#fff6fb",
+  /** Legacy pink search border. No component uses it; kept because the live pages still define --soft-line. */
   softLine: "#d988c0",
+  /** Legacy pink placeholder (4.1:1, below AA). The search placeholder now uses muted; kept because the live pages still define --soft-placeholder. */
   softPlaceholder: "#a26592",
   /** Empty rating stars. */
   rateOff: "#d98cc2",
