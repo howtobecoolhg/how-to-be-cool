@@ -1,0 +1,26 @@
+{
+  "name": "@htbc/design-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "How To Be Cool Club design system: tokens, CSS and HTML components for the guide.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./tokens": "./dist/tokens.js",
+    "./htbc.css": "./dist/htbc.css",
+    "./tokens.css": "./dist/tokens.css"
+  },
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "build": "tsc -p . && node scripts/build.ts",
+    "sync": "node scripts/sync.ts",
+    "typecheck": "tsc -p tsconfig.dev.json",
+    "test": "node --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "~5.8.3"
+  }
+}
